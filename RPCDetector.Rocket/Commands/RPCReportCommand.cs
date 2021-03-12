@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.IO;
-using System.Text;
+using System.Threading.Tasks;
 using Rocket.API;
-using Rocket.Core.Logging;
+using Rocket.Core.Utils;
 using Rocket.Unturned.Chat;
 using Rocket.Unturned.Player;
 using ShimmyMySherbet.RPCDetector.Models;
@@ -23,31 +23,45 @@ namespace ShimmyMySherbet.RPCDetector.Commands
 
         public List<string> Permissions => new List<string>() { "RPCDetector.GenerateReport" };
 
-        /*
-         * No point running this async, since it locks the RPC logger,
-         * which in turn will lock all RPC calls
-         */
-
         public void Execute(IRocketPlayer caller, string[] command)
         {
-            UnturnedChat.Say(caller, "Generating report...");
+            UnturnedChat.Say(caller, "Generating RPC report...");
+
+            Task<string> task = new Task<string>(CreateReport);
+            task.ContinueWith((x) =>
+            {
+                TaskDispatcher.QueueOnMainThread(() =>
+                {
+                    if (x.IsFaulted || x.IsCanceled)
+                    {
+                        UnturnedChat.Say(caller, "Failed to generate report.");
+                        return;
+                    }
+
+                    UnturnedChat.Say(caller, $"RPC Report URL: {x.Result}");
+
+                    if (caller is UnturnedPlayer up)
+                    {
+                        up.Player.sendBrowserRequest("Open RPC Report", x.Result);
+                    }
+                });
+            });
+        }
+
+        public string CreateReport()
+        {
             string report;
             using (MemoryStream stream = new MemoryStream())
             {
                 RPCReportGenerator gen = new RPCReportGenerator(stream);
                 gen.WriteReport(RPCDetectorCore.Logger);
-                report = Encoding.UTF8.GetString(stream.ToArray());
+                stream.Position = 0;
+                using (StreamReader reader = new StreamReader(stream))
+                    report = reader.ReadToEnd();
             }
 
             var paste = PasteAPI.Upload(report);
-
-            string url = $"https://paste.ee/d/{paste.id}";
-
-            Logger.Log($"RPC Report URL: {url}");
-            if (caller is UnturnedPlayer pl)
-            {
-                pl.Player.sendBrowserRequest("RPC Detector Report", url);
-            }
+            return $"https://paste.ee/d/{paste.id}";
         }
     }
 }

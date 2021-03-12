@@ -19,30 +19,32 @@ namespace ShimmyMySherbet.RPCDetector.Models
 
         public void WriteReport(RPCLogger loggerClient)
         {
-            lock (loggerClient)
+            using (StreamWriter writer = new StreamWriter(Stream, Encoding.UTF8, 1028, true))
             {
-                using (StreamWriter writer = new StreamWriter(Stream, Encoding.UTF8, 1028, true))
+                writer.WriteLine("RPC Caller Report");
+                writer.WriteLine("Auto-generated using RPCDetector by ShimmyMySherbet#5694");
+                writer.WriteLine();
+
+                writer.WriteLine($"Server Name: {Provider.serverName}");
+                writer.WriteLine($"Server ID: {Provider.serverID}");
+                writer.WriteLine($"Server Version: {Provider.APP_VERSION}");
+                writer.WriteLine();
+                lock (loggerClient)
                 {
-                    writer.WriteLine("RPC Caller Report");
-                    writer.WriteLine("Auto-generated using RPCDetector by ShimmyMySherbet#5694");
-                    writer.WriteLine();
-
-                    writer.WriteLine($"Server Name: {Provider.serverName}");
-                    writer.WriteLine($"Server ID: {Provider.serverID}");
-                    writer.WriteLine($"Server Version: {Provider.APP_VERSION}");
-                    writer.WriteLine();
-
                     writer.WriteLine($"Number of plugins using manual RPC Calls: {loggerClient.Logs.Count}.");
                     writer.WriteLine($"Total number of manual RPC callers: {loggerClient.Logs.Sum(x => x.Value.Callers.Count())}.");
                     writer.WriteLine($"Profiling time: {Math.Floor(DateTime.Now.Subtract(loggerClient.Created).TotalMinutes)} min.");
-                    writer.WriteLine();
-                    writer.WriteLine("Note: RPCDetector can only detect RPC calls as they are made. This report can be inconclusive if the plugins did not send any manual RPC messages during the profiling time.");
-                    writer.WriteLine();
-                    writer.WriteLine();
+                }
 
-                    writer.WriteLine($"<-------Dump RPC Callers------->");
-                    writer.WriteLine();
+                writer.WriteLine();
+                writer.WriteLine("Note: RPCDetector can only detect RPC calls as they are made. This report can be inconclusive if the plugins did not send any manual RPC messages during the profiling time.");
+                writer.WriteLine();
+                writer.WriteLine();
 
+                writer.WriteLine($"<-------Dump RPC Callers------->");
+                writer.WriteLine();
+                lock (loggerClient)
+                {
                     foreach (var log in loggerClient.Logs.Values)
                     {
                         writer.WriteLine($"<-- {log.Assembly.FullName} -->");
@@ -51,7 +53,7 @@ namespace ShimmyMySherbet.RPCDetector.Models
                         writer.WriteLine();
 
                         Dictionary<Type, List<RPCCaller>> typeCallers = new Dictionary<Type, List<RPCCaller>>();
-                        foreach(RPCCaller caller in log.Callers)
+                        foreach (RPCCaller caller in log.Callers)
                         {
                             if (!typeCallers.ContainsKey(caller.DeclaringType)) typeCallers.Add(caller.DeclaringType, new List<RPCCaller>());
                             typeCallers[caller.DeclaringType].Add(caller);
@@ -60,11 +62,11 @@ namespace ShimmyMySherbet.RPCDetector.Models
                         writer.WriteLine($"Types with Manual RPC Calls: {typeCallers.Count}");
                         writer.WriteLine("<Callers>");
                         writer.WriteLine();
-                        foreach(var typeCaller in typeCallers)
+                        foreach (var typeCaller in typeCallers)
                         {
                             writer.WriteLine($"<Type: {typeCaller.Key.FullName}>");
                             writer.WriteLine();
-                            foreach(var caller in typeCaller.Value)
+                            foreach (var caller in typeCaller.Value)
                             {
                                 writer.WriteLine($"{caller.Caller.FullDescription()}");
                                 writer.WriteLine($"Remote Method: {caller.Method}");
