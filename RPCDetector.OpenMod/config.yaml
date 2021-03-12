@@ -1,4 +1,4 @@
 # See https://openmod.github.io/openmod-docs/development-guide/configuration/
-
 PrintRPCCalls: true
-BlockRPCCalls: false
+# Emulates how Unturned will act once SteamChannels are removed while leaving Unturned calls in-tact
+BlockManualRPCCalls: false

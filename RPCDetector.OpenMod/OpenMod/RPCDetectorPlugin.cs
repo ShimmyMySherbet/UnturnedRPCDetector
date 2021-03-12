@@ -20,7 +20,7 @@ namespace ShimmyMySherbet.RPCDetector
         public Harmony HarmonyInstance;
 
         public bool PrintRPCCalls => m_Configuration.GetValue<bool>("PrintRPCCalls");
-        public bool BlockRPCCalls => m_Configuration.GetValue<bool>("BlockRPCCalls");
+        public bool BlockRPCCalls => m_Configuration.GetValue<bool>("BlockManualRPCCalls");
 
         public RPCDetectorPlugin(
             IConfiguration configuration,

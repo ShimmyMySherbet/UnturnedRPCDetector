@@ -190,8 +190,9 @@ namespace ShimmyMySherbet.RPCDetector
             {
                 lock (Logger)
                     Logger?.TryRegisterCaller(name, caller, __instance);
+                return !BlockCalls;
             }
-            return !BlockCalls;
+            return true;
         }
 
         [MPatch]
@@ -202,21 +203,23 @@ namespace ShimmyMySherbet.RPCDetector
             {
                 lock (Logger)
                     Logger?.TryRegisterCaller(name, caller, __instance);
+                return !BlockCalls;
             }
-            return !BlockCalls;
+            return true;
         }
 
         [MPatch]
         public static bool send(SteamChannel __instance, ESteamCall mode, byte bound, ESteamPacket type, int size, byte[] packet)
         {
-            if (type == ESteamPacket.KICKED) return !BlockCalls; // ID collision bug
+            if (type == ESteamPacket.KICKED) return true; // ID collision bug
             var caller = GetCaller();
             if (caller != null && !IsInternal(caller))
             {
                 lock (Logger)
                     Logger?.TryRegisterCaller(type.ToString(), caller, __instance);
+                return !BlockCalls;
             }
-            return !BlockCalls;
+            return true;
         }
 
         [MPatch]
@@ -227,21 +230,23 @@ namespace ShimmyMySherbet.RPCDetector
             {
                 lock (Logger)
                     Logger?.TryRegisterCaller(name, caller, __instance);
+                return !BlockCalls;
             }
-            return !BlockCalls;
+            return true;
         }
 
         [MPatch]
         public static bool send(SteamChannel __instance, ESteamCall mode, byte x, byte y, byte area, ESteamPacket type, int size, byte[] packet)
         {
-            if (type == ESteamPacket.KICKED) return !BlockCalls; // ID collision bug
+            if (type == ESteamPacket.KICKED) return true; // ID collision bug
             var caller = GetCaller();
             if (caller != null && !IsInternal(caller))
             {
                 lock (Logger)
                     Logger?.TryRegisterCaller(type.ToString(), caller, __instance);
+                return !BlockCalls;
             }
-            return !BlockCalls;
+            return true;
         }
 
         [MPatch]
@@ -252,21 +257,23 @@ namespace ShimmyMySherbet.RPCDetector
             {
                 lock (Logger)
                     Logger?.TryRegisterCaller(name, caller, __instance);
+                return !BlockCalls;
             }
-            return !BlockCalls;
+            return true;
         }
 
         [MPatch]
         public static bool send(SteamChannel __instance, ESteamCall mode, ESteamPacket type, int size, byte[] packet)
         {
-            if (type == ESteamPacket.KICKED) return !BlockCalls; // ID collision bug
+            if (type == ESteamPacket.KICKED) return true; // ID collision bug
             var caller = GetCaller();
             if (caller != null && !IsInternal(caller))
             {
                 lock (Logger)
                     Logger?.TryRegisterCaller(type.ToString(), caller, __instance);
+                return !BlockCalls;
             }
-            return !BlockCalls;
+            return true;
         }
 
         [MPatch]
@@ -277,21 +284,23 @@ namespace ShimmyMySherbet.RPCDetector
             {
                 lock (Logger)
                     Logger?.TryRegisterCaller(name, caller, __instance);
+                return !BlockCalls;
             }
-            return !BlockCalls;
+            return true;
         }
 
         [MPatch]
         public static bool send(SteamChannel __instance, ESteamCall mode, Vector3 point, float radius, ESteamPacket type, int size, byte[] packet)
         {
-            if (type == ESteamPacket.KICKED) return !BlockCalls; // ID collision bug
+            if (type == ESteamPacket.KICKED) return true; // ID collision bug
             var caller = GetCaller();
             if (caller != null && !IsInternal(caller))
             {
                 lock (Logger)
                     Logger?.TryRegisterCaller(type.ToString(), caller, __instance);
+                return !BlockCalls;
             }
-            return !BlockCalls;
+            return true;
         }
 
         [MPatch]
@@ -302,8 +311,9 @@ namespace ShimmyMySherbet.RPCDetector
             {
                 lock (Logger)
                     Logger?.TryRegisterCaller(name, caller, __instance);
+                return !BlockCalls;
             }
-            return !BlockCalls;
+            return true;
         }
     }
 }

@@ -25,7 +25,7 @@ namespace ShimmyMySherbet.RPCDetector
         public static RPCDetector Plugin;
 
         public static bool PrintCalls => Plugin != null ? Plugin.Configuration.Instance.PrintManualRPCCalls : false;
-        public static bool BlockCalls => Plugin != null ? Plugin.Configuration.Instance.BlockRPCCalls : false;
+        public static bool BlockCalls => Plugin != null ? Plugin.Configuration.Instance.BlockmanualRPCCalls : false;
 
         /// <summary>
         /// Initializes the RPCDetectorCore.
@@ -162,8 +162,9 @@ namespace ShimmyMySherbet.RPCDetector
             {
                 lock (Logger)
                     Logger?.TryRegisterCaller(name, caller, __instance);
+                return !BlockCalls;
             }
-            return !BlockCalls;
+            return true;
         }
 
         [MPatch]
@@ -174,8 +175,9 @@ namespace ShimmyMySherbet.RPCDetector
             {
                 lock (Logger)
                     Logger?.TryRegisterCaller(name, caller, __instance);
+                return !BlockCalls;
             }
-            return !BlockCalls;
+            return true;
         }
 
         [MPatch]
@@ -187,8 +189,9 @@ namespace ShimmyMySherbet.RPCDetector
             {
                 lock (Logger)
                     Logger?.TryRegisterCaller(type.ToString(), caller, __instance);
+                return !BlockCalls;
             }
-            return !BlockCalls;
+            return true;
         }
 
         [MPatch]
@@ -199,8 +202,9 @@ namespace ShimmyMySherbet.RPCDetector
             {
                 lock (Logger)
                     Logger?.TryRegisterCaller(name, caller, __instance);
+                return !BlockCalls;
             }
-            return !BlockCalls;
+            return true;
         }
 
         [MPatch]
@@ -212,8 +216,9 @@ namespace ShimmyMySherbet.RPCDetector
             {
                 lock (Logger)
                     Logger?.TryRegisterCaller(type.ToString(), caller, __instance);
+                return !BlockCalls;
             }
-            return !BlockCalls;
+            return true;
         }
 
         [MPatch]
@@ -224,8 +229,9 @@ namespace ShimmyMySherbet.RPCDetector
             {
                 lock (Logger)
                     Logger?.TryRegisterCaller(name, caller, __instance);
+                return !BlockCalls;
             }
-            return !BlockCalls;
+            return true;
         }
 
         [MPatch]
@@ -237,8 +243,9 @@ namespace ShimmyMySherbet.RPCDetector
             {
                 lock (Logger)
                     Logger?.TryRegisterCaller(type.ToString(), caller, __instance);
+                return !BlockCalls;
             }
-            return !BlockCalls;
+            return true;
         }
 
         [MPatch]
@@ -249,8 +256,9 @@ namespace ShimmyMySherbet.RPCDetector
             {
                 lock (Logger)
                     Logger?.TryRegisterCaller(name, caller, __instance);
+                return !BlockCalls;
             }
-            return !BlockCalls;
+            return true;
         }
 
         [MPatch]
@@ -262,8 +270,9 @@ namespace ShimmyMySherbet.RPCDetector
             {
                 lock (Logger)
                     Logger?.TryRegisterCaller(type.ToString(), caller, __instance);
+                return !BlockCalls;
             }
-            return !BlockCalls;
+            return true;
         }
 
         [MPatch]
@@ -274,8 +283,9 @@ namespace ShimmyMySherbet.RPCDetector
             {
                 lock (Logger)
                     Logger?.TryRegisterCaller(name, caller, __instance);
+                return !BlockCalls;
             }
-            return !BlockCalls;
+            return true;
         }
 
         #endregion "Patches"
