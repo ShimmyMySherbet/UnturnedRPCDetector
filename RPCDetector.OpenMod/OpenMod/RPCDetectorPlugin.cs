@@ -7,7 +7,7 @@ using Microsoft.Extensions.Logging;
 using OpenMod.API.Plugins;
 using OpenMod.Unturned.Plugins;
 
-[assembly: PluginMetadata("ShimmyMySherbet.RPCDetector", DisplayName = "RPCDetector")]
+[assembly: PluginMetadata("RPCDetector", DisplayName = "RPCDetector")]
 
 namespace ShimmyMySherbet.RPCDetector
 {

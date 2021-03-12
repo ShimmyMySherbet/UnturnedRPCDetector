@@ -1,4 +1,4 @@
 # See https://openmod.github.io/openmod-docs/development-guide/configuration/
 
-PrintRPCCalls: true,
+PrintRPCCalls: true
 BlockRPCCalls: false

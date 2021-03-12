@@ -8,6 +8,7 @@
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <GenerateNugetPackage>true</GenerateNugetPackage>
     <Product>RPCDetector</Product>
+    <AssemblyName>ShimmyMySherbet.RPCDetector</AssemblyName>
   </PropertyGroup>
 
   <ItemGroup>
