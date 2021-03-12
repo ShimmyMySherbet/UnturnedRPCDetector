@@ -27,7 +27,6 @@ namespace ShimmyMySherbet.RPCDetector.Commands
                 gen.WriteReport(RPCDetectorCore.Logger);
                 report = Encoding.UTF8.GetString(stream.ToArray());
             }
-
             var paste = PasteAPI.Upload(report);
 
             string url = $"https://paste.ee/d/{paste.id}";

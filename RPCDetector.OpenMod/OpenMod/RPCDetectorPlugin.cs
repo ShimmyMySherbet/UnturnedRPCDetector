@@ -1,6 +1,5 @@
 ﻿using System;
 using Cysharp.Threading.Tasks;
-using HarmonyLib;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
@@ -16,8 +15,6 @@ namespace ShimmyMySherbet.RPCDetector
         private readonly IConfiguration m_Configuration;
         private readonly IStringLocalizer m_StringLocalizer;
         public readonly ILogger<RPCDetectorPlugin> m_Logger;
-
-        public Harmony HarmonyInstance;
 
         public bool PrintRPCCalls => m_Configuration.GetValue<bool>("PrintRPCCalls");
         public bool BlockRPCCalls => m_Configuration.GetValue<bool>("BlockManualRPCCalls");
@@ -35,14 +32,13 @@ namespace ShimmyMySherbet.RPCDetector
 
         protected override UniTask OnLoadAsync()
         {
-            HarmonyInstance = new Harmony("RPCDetector.Openmod");
-            RPCDetectorCore.Init(HarmonyInstance, this);
+            RPCDetectorCore.Init(Harmony, this);
             return UniTask.CompletedTask;
         }
 
         protected override UniTask OnUnloadAsync()
         {
-            RPCDetectorCore.Unload(HarmonyInstance);
+            RPCDetectorCore.Unload(Harmony);
             return UniTask.CompletedTask;
         }
     }
