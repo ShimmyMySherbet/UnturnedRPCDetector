@@ -4,12 +4,12 @@ using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using HarmonyLib;
-using JetBrains.Annotations;
 using SDG.Unturned;
 using ShimmyMySherbet.RPCDetector.Models;
 using Steamworks;
 using UnityEngine;
 using RLog = Rocket.Core.Logging.Logger;
+
 namespace ShimmyMySherbet.RPCDetector
 {
 #pragma warning disable CS0612 // ESteamPacket.KICKED ignore
@@ -22,17 +22,18 @@ namespace ShimmyMySherbet.RPCDetector
 
         public const bool PrintUnturnedCalls = false;
 
-        private static bool PrintCalls;
-        private static bool BlockCalls;
+        public static RPCDetector Plugin;
+
+        public static bool PrintCalls => Plugin != null ? Plugin.Configuration.Instance.PrintManualRPCCalls : false;
+        public static bool BlockCalls => Plugin != null ? Plugin.Configuration.Instance.BlockRPCCalls : false;
 
         /// <summary>
         /// Initializes the RPCDetectorCore.
         /// </summary>
-        public static void Init(Harmony harmony, bool printCalls, bool blockCalls)
+        public static void Init(Harmony harmony, RPCDetector instance)
         {
             Logger = new RPCLogger();
-            PrintCalls = printCalls;
-            BlockCalls = blockCalls;
+            Plugin = instance;
             Dictionary<MethodInfo, MethodInfo> patchMappings = new Dictionary<MethodInfo, MethodInfo>();
 
             foreach (MethodInfo patchMethod in typeof(RPCDetectorCore).GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static).Where(x => Attribute.IsDefined(x, typeof(MPatch))))
@@ -61,7 +62,6 @@ namespace ShimmyMySherbet.RPCDetector
                         }
                     }
                 }
-
             }
 
             foreach (var patchMapping in patchMappings)
@@ -72,8 +72,38 @@ namespace ShimmyMySherbet.RPCDetector
             }
 
             Logger.CallReceived += Logger_CallReceived;
-
             RLog.Log($"Created {patchMappings.Count} patches.");
+        }
+
+        public static void Unload(Harmony harmony)
+        {
+            harmony.UnpatchAll(harmony.Id);
+            if (Logger != null)
+            {
+                Logger.CallReceived -= Logger_CallReceived;
+            }
+            Logger = null;
+            Plugin = null;
+        }
+
+        /// <summary>
+        /// Gets the last Non-RPCPatches and SteamChannel caller
+        /// </summary>
+        /// <returns>Caller</returns>
+        private static MethodBase GetCaller()
+        {
+            StackTrace trace = new StackTrace();
+            for (int i = 0; i < trace.FrameCount; i++)
+            {
+                var frame = trace.GetFrame(i);
+                bool isCaller = frame.GetMethod().DeclaringType != typeof(RPCDetectorCore)
+                             && frame.GetMethod().DeclaringType != typeof(SteamChannel);
+                if (isCaller)
+                {
+                    return frame.GetMethod();
+                }
+            }
+            return null;
         }
 
         private static bool IsInternal(MethodBase caller) => caller.DeclaringType.Assembly == Unturned;
@@ -87,36 +117,14 @@ namespace ShimmyMySherbet.RPCDetector
         }
 
         /// <summary>
-        /// Gets the last Non-RPCPatches and SteamChannel caller
-        /// </summary>
-        /// <returns>Caller</returns>
-        private static MethodBase GetCaller()
-        {
-            StackTrace trace = new StackTrace();
-            for (int i = 0; i < trace.FrameCount; i++)
-            {
-                var frame = trace.GetFrame(i);
-                bool isCaller = (frame.GetMethod().DeclaringType != typeof(RPCDetectorCore) && frame.GetMethod().DeclaringType != typeof(SteamChannel));
-                var m = frame.GetMethod();
-                if (isCaller)
-                {
-                    return m;
-                }
-            }
-            return null;
-        }
-
-        /// <summary>
         /// Pretty-Prints the call to the console
         /// </summary>
-        /// <param name="name">RPC Method Na,e</param>
-        /// <param name="caller">Caller Method Base</param>
         private static void PrintCaller(string name, MethodBase caller)
         {
-            bool isInternal = caller.DeclaringType.Assembly == Unturned;
+            bool isInternal = IsInternal(caller);
             if (isInternal && !PrintUnturnedCalls) return;
 
-            var pre = Console.ForegroundColor;
+            var prevColor = Console.ForegroundColor;
 
             Console.ForegroundColor = ConsoleColor.White;
             Console.Write("[RPC Call] ");
@@ -141,8 +149,10 @@ namespace ShimmyMySherbet.RPCDetector
             Console.ForegroundColor = ConsoleColor.Cyan;
             Console.Write(name + "\n");
 
-            Console.ForegroundColor = pre;
+            Console.ForegroundColor = prevColor;
         }
+
+        #region "Patches"
 
         [MPatch]
         public static bool send(SteamChannel __instance, string name, CSteamID steamID, ESteamPacket type, params object[] arguments)
@@ -150,7 +160,8 @@ namespace ShimmyMySherbet.RPCDetector
             var caller = GetCaller();
             if (caller != null && !IsInternal(caller))
             {
-                Logger.TryRegisterCaller(name, caller, __instance);
+                lock (Logger)
+                    Logger?.TryRegisterCaller(name, caller, __instance);
             }
             return !BlockCalls;
         }
@@ -161,7 +172,8 @@ namespace ShimmyMySherbet.RPCDetector
             var caller = GetCaller();
             if (caller != null && !IsInternal(caller))
             {
-                Logger.TryRegisterCaller(name, caller, __instance);
+                lock (Logger)
+                    Logger?.TryRegisterCaller(name, caller, __instance);
             }
             return !BlockCalls;
         }
@@ -173,7 +185,8 @@ namespace ShimmyMySherbet.RPCDetector
             var caller = GetCaller();
             if (caller != null && !IsInternal(caller))
             {
-                Logger.TryRegisterCaller(type.ToString(), caller, __instance);
+                lock (Logger)
+                    Logger?.TryRegisterCaller(type.ToString(), caller, __instance);
             }
             return !BlockCalls;
         }
@@ -184,7 +197,8 @@ namespace ShimmyMySherbet.RPCDetector
             var caller = GetCaller();
             if (caller != null && !IsInternal(caller))
             {
-                Logger.TryRegisterCaller(name, caller, __instance);
+                lock (Logger)
+                    Logger?.TryRegisterCaller(name, caller, __instance);
             }
             return !BlockCalls;
         }
@@ -196,7 +210,8 @@ namespace ShimmyMySherbet.RPCDetector
             var caller = GetCaller();
             if (caller != null && !IsInternal(caller))
             {
-                Logger.TryRegisterCaller(type.ToString(), caller, __instance);
+                lock (Logger)
+                    Logger?.TryRegisterCaller(type.ToString(), caller, __instance);
             }
             return !BlockCalls;
         }
@@ -207,7 +222,8 @@ namespace ShimmyMySherbet.RPCDetector
             var caller = GetCaller();
             if (caller != null && !IsInternal(caller))
             {
-                Logger.TryRegisterCaller(name, caller, __instance);
+                lock (Logger)
+                    Logger?.TryRegisterCaller(name, caller, __instance);
             }
             return !BlockCalls;
         }
@@ -219,7 +235,8 @@ namespace ShimmyMySherbet.RPCDetector
             var caller = GetCaller();
             if (caller != null && !IsInternal(caller))
             {
-                Logger.TryRegisterCaller(type.ToString(), caller, __instance);
+                lock (Logger)
+                    Logger?.TryRegisterCaller(type.ToString(), caller, __instance);
             }
             return !BlockCalls;
         }
@@ -230,7 +247,8 @@ namespace ShimmyMySherbet.RPCDetector
             var caller = GetCaller();
             if (caller != null && !IsInternal(caller))
             {
-                Logger.TryRegisterCaller(name, caller, __instance);
+                lock (Logger)
+                    Logger?.TryRegisterCaller(name, caller, __instance);
             }
             return !BlockCalls;
         }
@@ -242,7 +260,8 @@ namespace ShimmyMySherbet.RPCDetector
             var caller = GetCaller();
             if (caller != null && !IsInternal(caller))
             {
-                Logger.TryRegisterCaller(type.ToString(), caller, __instance);
+                lock (Logger)
+                    Logger?.TryRegisterCaller(type.ToString(), caller, __instance);
             }
             return !BlockCalls;
         }
@@ -253,9 +272,12 @@ namespace ShimmyMySherbet.RPCDetector
             var caller = GetCaller();
             if (caller != null && !IsInternal(caller))
             {
-                Logger.TryRegisterCaller(name, caller, __instance);
+                lock (Logger)
+                    Logger?.TryRegisterCaller(name, caller, __instance);
             }
             return !BlockCalls;
         }
+
+        #endregion "Patches"
     }
 }
