@@ -1,10 +1,11 @@
 ﻿using HarmonyLib;
 using Rocket.API;
 using Rocket.Core.Plugins;
+using ShimmyMySherbet.RPCDetector.RocketMod;
 
 namespace ShimmyMySherbet.RPCDetector
 {
-    public class RPCDetector : RocketPlugin
+    public class RPCDetector : RocketPlugin<RPCConfig>
     {
         public Harmony HarmonyInstance;
 
@@ -12,7 +13,8 @@ namespace ShimmyMySherbet.RPCDetector
         {
             base.LoadPlugin();
             HarmonyInstance = new Harmony("RPCDetector");
-            RPCDetectorCore.Init(HarmonyInstance);
+            var config = Configuration.Instance;
+            RPCDetectorCore.Init(HarmonyInstance, config.PrintManualRPCCalls, config.BlockRPCCalls);
         }
 
         public override void UnloadPlugin(PluginState state = PluginState.Unloaded)

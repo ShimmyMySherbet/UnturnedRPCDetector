@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using HarmonyLib;
+using JetBrains.Annotations;
 using SDG.Unturned;
 using ShimmyMySherbet.RPCDetector.Models;
 using Steamworks;
@@ -21,13 +22,17 @@ namespace ShimmyMySherbet.RPCDetector
 
         public const bool PrintUnturnedCalls = false;
 
+        private static bool PrintCalls;
+        private static bool BlockCalls;
+
         /// <summary>
         /// Initializes the RPCDetectorCore.
         /// </summary>
-        /// <param name="harmony">The harmony instance used to create patches</param>
-        public static void Init(Harmony harmony)
+        public static void Init(Harmony harmony, bool printCalls, bool blockCalls)
         {
             Logger = new RPCLogger();
+            PrintCalls = printCalls;
+            BlockCalls = blockCalls;
             Dictionary<MethodInfo, MethodInfo> patchMappings = new Dictionary<MethodInfo, MethodInfo>();
 
             foreach (MethodInfo patchMethod in typeof(RPCDetectorCore).GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static).Where(x => Attribute.IsDefined(x, typeof(MPatch))))
@@ -75,7 +80,10 @@ namespace ShimmyMySherbet.RPCDetector
 
         private static void Logger_CallReceived(RPCCaller caller)
         {
-            PrintCaller(caller.Method, caller.Caller);
+            if (PrintCalls)
+            {
+                PrintCaller(caller.Method, caller.Caller);
+            }
         }
 
         /// <summary>
@@ -137,107 +145,117 @@ namespace ShimmyMySherbet.RPCDetector
         }
 
         [MPatch]
-        public static void send(SteamChannel __instance, string name, CSteamID steamID, ESteamPacket type, params object[] arguments)
+        public static bool send(SteamChannel __instance, string name, CSteamID steamID, ESteamPacket type, params object[] arguments)
         {
             var caller = GetCaller();
             if (caller != null && !IsInternal(caller))
             {
                 Logger.TryRegisterCaller(name, caller, __instance);
             }
+            return !BlockCalls;
         }
 
         [MPatch]
-        public static void sendAside(SteamChannel __instance, string name, CSteamID steamID, ESteamPacket type, params object[] arguments)
+        public static bool sendAside(SteamChannel __instance, string name, CSteamID steamID, ESteamPacket type, params object[] arguments)
         {
             var caller = GetCaller();
             if (caller != null && !IsInternal(caller))
             {
                 Logger.TryRegisterCaller(name, caller, __instance);
             }
+            return !BlockCalls;
         }
 
         [MPatch]
-        public static void send(SteamChannel __instance, ESteamCall mode, byte bound, ESteamPacket type, int size, byte[] packet)
+        public static bool send(SteamChannel __instance, ESteamCall mode, byte bound, ESteamPacket type, int size, byte[] packet)
         {
-            if (type == ESteamPacket.KICKED) return; // ID collision bug
+            if (type == ESteamPacket.KICKED) return !BlockCalls; // ID collision bug
             var caller = GetCaller();
             if (caller != null && !IsInternal(caller))
             {
                 Logger.TryRegisterCaller(type.ToString(), caller, __instance);
             }
+            return !BlockCalls;
         }
 
         [MPatch]
-        public static void send(SteamChannel __instance, string name, ESteamCall mode, byte bound, ESteamPacket type, params object[] arguments)
+        public static bool send(SteamChannel __instance, string name, ESteamCall mode, byte bound, ESteamPacket type, params object[] arguments)
         {
             var caller = GetCaller();
             if (caller != null && !IsInternal(caller))
             {
                 Logger.TryRegisterCaller(name, caller, __instance);
             }
+            return !BlockCalls;
         }
 
         [MPatch]
-        public static void send(SteamChannel __instance, ESteamCall mode, byte x, byte y, byte area, ESteamPacket type, int size, byte[] packet)
+        public static bool send(SteamChannel __instance, ESteamCall mode, byte x, byte y, byte area, ESteamPacket type, int size, byte[] packet)
         {
-            if (type == ESteamPacket.KICKED) return; // ID collision bug
+            if (type == ESteamPacket.KICKED) return !BlockCalls; // ID collision bug
             var caller = GetCaller();
             if (caller != null && !IsInternal(caller))
             {
                 Logger.TryRegisterCaller(type.ToString(), caller, __instance);
             }
+            return !BlockCalls;
         }
 
         [MPatch]
-        public static void send(SteamChannel __instance, string name, ESteamCall mode, byte x, byte y, byte area, ESteamPacket type, params object[] arguments)
+        public static bool send(SteamChannel __instance, string name, ESteamCall mode, byte x, byte y, byte area, ESteamPacket type, params object[] arguments)
         {
             var caller = GetCaller();
             if (caller != null && !IsInternal(caller))
             {
                 Logger.TryRegisterCaller(name, caller, __instance);
             }
+            return !BlockCalls;
         }
 
         [MPatch]
-        public static void send(SteamChannel __instance, ESteamCall mode, ESteamPacket type, int size, byte[] packet)
+        public static bool send(SteamChannel __instance, ESteamCall mode, ESteamPacket type, int size, byte[] packet)
         {
-            if (type == ESteamPacket.KICKED) return; // ID collision bug
+            if (type == ESteamPacket.KICKED) return !BlockCalls; // ID collision bug
             var caller = GetCaller();
             if (caller != null && !IsInternal(caller))
             {
                 Logger.TryRegisterCaller(type.ToString(), caller, __instance);
             }
+            return !BlockCalls;
         }
 
         [MPatch]
-        public static void send(SteamChannel __instance, string name, ESteamCall mode, ESteamPacket type, params object[] arguments)
+        public static bool send(SteamChannel __instance, string name, ESteamCall mode, ESteamPacket type, params object[] arguments)
         {
             var caller = GetCaller();
             if (caller != null && !IsInternal(caller))
             {
                 Logger.TryRegisterCaller(name, caller, __instance);
             }
+            return !BlockCalls;
         }
 
         [MPatch]
-        public static void send(SteamChannel __instance, ESteamCall mode, Vector3 point, float radius, ESteamPacket type, int size, byte[] packet)
+        public static bool send(SteamChannel __instance, ESteamCall mode, Vector3 point, float radius, ESteamPacket type, int size, byte[] packet)
         {
-            if (type == ESteamPacket.KICKED) return; // ID collision bug
+            if (type == ESteamPacket.KICKED) return !BlockCalls; // ID collision bug
             var caller = GetCaller();
             if (caller != null && !IsInternal(caller))
             {
                 Logger.TryRegisterCaller(type.ToString(), caller, __instance);
             }
+            return !BlockCalls;
         }
 
         [MPatch]
-        public static void send(SteamChannel __instance, string name, ESteamCall mode, Vector3 point, float radius, ESteamPacket type, params object[] arguments)
+        public static bool send(SteamChannel __instance, string name, ESteamCall mode, Vector3 point, float radius, ESteamPacket type, params object[] arguments)
         {
             var caller = GetCaller();
             if (caller != null && !IsInternal(caller))
             {
                 Logger.TryRegisterCaller(name, caller, __instance);
             }
+            return !BlockCalls;
         }
     }
 }
