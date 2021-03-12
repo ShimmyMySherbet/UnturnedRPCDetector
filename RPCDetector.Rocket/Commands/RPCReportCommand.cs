@@ -39,13 +39,13 @@ namespace ShimmyMySherbet.RPCDetector.Commands
                     }
 
                     UnturnedChat.Say(caller, $"RPC Report URL: {x.Result}");
-
                     if (caller is UnturnedPlayer up)
                     {
                         up.Player.sendBrowserRequest("Open RPC Report", x.Result);
                     }
                 });
             });
+            task.Start();
         }
 
         public string CreateReport()
@@ -59,7 +59,6 @@ namespace ShimmyMySherbet.RPCDetector.Commands
                 using (StreamReader reader = new StreamReader(stream))
                     report = reader.ReadToEnd();
             }
-
             var paste = PasteAPI.Upload(report);
             return $"https://paste.ee/d/{paste.id}";
         }
