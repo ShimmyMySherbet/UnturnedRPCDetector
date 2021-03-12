@@ -14,7 +14,7 @@ namespace ShimmyMySherbet.RPCDetector
             base.LoadPlugin();
             HarmonyInstance = new Harmony("RPCDetector");
             var config = Configuration.Instance;
-            RPCDetectorCore.Init(HarmonyInstance, config.PrintManualRPCCalls, config.BlockRPCCalls);
+            RPCDetectorCore.Init(HarmonyInstance, this);
         }
 
         public override void UnloadPlugin(PluginState state = PluginState.Unloaded)
