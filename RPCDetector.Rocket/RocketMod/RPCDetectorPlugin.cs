@@ -13,14 +13,13 @@ namespace ShimmyMySherbet.RPCDetector
         {
             base.LoadPlugin();
             HarmonyInstance = new Harmony("RPCDetector");
-            var config = Configuration.Instance;
             RPCDetectorCore.Init(HarmonyInstance, this);
         }
 
         public override void UnloadPlugin(PluginState state = PluginState.Unloaded)
         {
             base.UnloadPlugin(state);
-            HarmonyInstance.UnpatchAll("RPCDetector");
+            RPCDetectorCore.Unload(HarmonyInstance);
         }
     }
 }
