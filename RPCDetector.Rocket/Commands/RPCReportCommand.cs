@@ -2,6 +2,7 @@
 using System.IO;
 using System.Threading.Tasks;
 using Rocket.API;
+using Rocket.Core.Logging;
 using Rocket.Core.Utils;
 using Rocket.Unturned.Chat;
 using Rocket.Unturned.Player;
@@ -51,15 +52,33 @@ namespace ShimmyMySherbet.RPCDetector.Commands
         public string CreateReport()
         {
             string report;
-            using (MemoryStream stream = new MemoryStream())
+            try
             {
-                RPCReportGenerator gen = new RPCReportGenerator(stream);
-                gen.WriteReport(RPCDetectorCore.Logger);
-                stream.Position = 0;
-                using (StreamReader reader = new StreamReader(stream))
-                    report = reader.ReadToEnd();
+                using (MemoryStream stream = new MemoryStream())
+                {
+                    RPCReportGenerator gen = new RPCReportGenerator(stream);
+                    gen.WriteReport(RPCDetectorCore.Logger);
+                    stream.Position = 0;
+                    using (StreamReader reader = new StreamReader(stream))
+                        report = reader.ReadToEnd();
+                }
             }
-            var paste = PasteAPI.Upload(report);
+            catch (System.Exception ex)
+            {
+                Logger.LogError($"Failed to write report: {ex.Message}");
+                throw;
+            }
+
+            PasteResponse paste;
+            try
+            {
+                paste = PasteAPI.Upload(report);
+            }
+            catch (System.Exception ex)
+            {
+                Logger.LogError($"Failed to upload report: {ex.Message}");
+                throw;
+            }
             return $"https://paste.ee/d/{paste.id}";
         }
     }
