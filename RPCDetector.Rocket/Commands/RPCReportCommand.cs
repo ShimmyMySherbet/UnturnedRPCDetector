@@ -1,5 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Rocket.API;
 using Rocket.Core.Logging;
@@ -18,7 +20,7 @@ namespace ShimmyMySherbet.RPCDetector.Commands
 
         public string Help => "Generates an RPC Report";
 
-        public string Syntax => Name;
+        public string Syntax => $"ReportRPC (txt/paste)";
 
         public List<string> Aliases => new List<string>();
 
@@ -28,8 +30,25 @@ namespace ShimmyMySherbet.RPCDetector.Commands
         {
             UnturnedChat.Say(caller, "Generating RPC report...");
 
-            Task<string> task = new Task<string>(CreateReport);
-            task.ContinueWith((x) =>
+            int mode = 0;
+            if (command.Length >= 1)
+            {
+                switch(command[0].ToLower())
+                {
+                    case "txt":
+                        mode = 0;
+                        break;
+                    case "paste":
+                        mode = 1;
+                        break;
+                    default:
+                        UnturnedChat.Say(caller, "Unknown log mode.");
+                        break;
+                }
+            }
+
+            Task<ReportGen> task = new Task<ReportGen>(() => CreateReport(mode));
+            task.ContinueWith((Task<ReportGen> x) =>
             {
                 TaskDispatcher.QueueOnMainThread(() =>
                 {
@@ -39,17 +58,17 @@ namespace ShimmyMySherbet.RPCDetector.Commands
                         return;
                     }
 
-                    UnturnedChat.Say(caller, $"RPC Report URL: {x.Result}");
-                    if (caller is UnturnedPlayer up)
+                    UnturnedChat.Say(caller, x.Result.Message);
+                    if (caller is UnturnedPlayer up && x.Result.ReportURL != null)
                     {
-                        up.Player.sendBrowserRequest("Open RPC Report", x.Result);
+                        up.Player.sendBrowserRequest("Open RPC Report", x.Result.ReportURL);
                     }
                 });
             });
             task.Start();
         }
 
-        public string CreateReport()
+        public ReportGen CreateReport(int tool = 0)
         {
             string report;
             try
@@ -69,6 +88,19 @@ namespace ShimmyMySherbet.RPCDetector.Commands
                 throw;
             }
 
+            switch (tool)
+            {
+                case 0:
+                    return Source_PasteEE(report);
+
+                case 1:
+                    return Source_Log(report);
+            }
+            return new ReportGen(null, "Failed to upload report.");
+        }
+
+        public ReportGen Source_PasteEE(string report)
+        {
             PasteResponse paste;
             try
             {
@@ -79,7 +111,30 @@ namespace ShimmyMySherbet.RPCDetector.Commands
                 Logger.LogError($"Failed to upload report: {ex.Message}");
                 throw;
             }
-            return $"https://paste.ee/d/{paste.id}";
+            var url = $"https://paste.ee/d/{paste.id}";
+            return new ReportGen(url, $"RPC Report URL: {url}");
+        }
+
+        public ReportGen Source_Log(string report)
+        {
+            string name = $"RPCReport_{DateTime.Now.Ticks}.log";
+            string fileName = Path.Combine(Rocket.Core.Environment.LogsDirectory, name);
+
+            File.WriteAllText(fileName, report);
+
+            return new ReportGen(null, $"Report written to {name} in logs folder.");
+        }
+
+        public struct ReportGen
+        {
+            public ReportGen(string url, string msg)
+            {
+                ReportURL = url;
+                Message = msg;
+            }
+
+            public string ReportURL;
+            public string Message;
         }
     }
 }
