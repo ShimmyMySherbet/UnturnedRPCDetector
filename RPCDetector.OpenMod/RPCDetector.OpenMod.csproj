@@ -11,7 +11,7 @@
     <AssemblyName>ShimmyMySherbet.RPCDetector</AssemblyName>
     <Description>An Unturned plugin to detect and report manual RPC calls from plugins.</Description>
     <RepositoryUrl>https://github.com/ShimmyMySherbet/UnturnedRPCDetector</RepositoryUrl>
-    <Version>1.1.0</Version>
+    <Version>1.2.0</Version>
   </PropertyGroup>
 
   <ItemGroup>
