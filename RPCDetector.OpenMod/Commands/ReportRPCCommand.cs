@@ -4,6 +4,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Cysharp.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using OpenMod.API;
 using OpenMod.Core.Commands;
 using OpenMod.Unturned.Users;
 using ShimmyMySherbet.RPCDetector.Models;
@@ -31,11 +32,11 @@ namespace ShimmyMySherbet.RPCDetector.Commands
                 gen.WriteReport(RPCDetectorCore.Logger);
                 report = Encoding.UTF8.GetString(stream.ToArray());
             }
-            PasteResponse paste;
-
+            string url;
+            HasteAPI haste = new HasteAPI();
             try
             {
-                paste = PasteAPI.Upload(report);
+                url = haste.Upload(report);
             }
             catch (Exception ex)
             {
@@ -44,7 +45,6 @@ namespace ShimmyMySherbet.RPCDetector.Commands
                 throw;
             }
 
-            string url = $"https://paste.ee/d/{paste.id}";
 
             await UniTask.SwitchToMainThread();
 
@@ -60,7 +60,7 @@ namespace ShimmyMySherbet.RPCDetector.Commands
         }
     }
 
-    [CommandDescription("Generates a report of manual RPC Calls and writes it to a log file"), Command("txt"), CommandParent(typeof(ReportRPCCommand))]
+    [CommandDescription("Generates a report of manual RPC Calls and writes it to a log file"), Command("paste"), CommandParent(typeof(ReportRPCCommand))]
     public class ReportRPCLogCommand : Command
     {
         public ILogger<RPCDetectorPlugin> Logger;

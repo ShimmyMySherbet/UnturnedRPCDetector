@@ -81,6 +81,7 @@
   <ItemGroup>
     <Compile Include="Commands\RPCReportCommand.cs" />
     <Compile Include="Models\AssemblyRPCLog.cs" />
+    <Compile Include="Models\HastebinAPI.cs" />
     <Compile Include="Models\Paste.cs" />
     <Compile Include="Models\PatchAttribute.cs" />
     <Compile Include="Models\RPCCaller.cs" />

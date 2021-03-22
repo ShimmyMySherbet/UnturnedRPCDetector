@@ -28,6 +28,7 @@ namespace ShimmyMySherbet.RPCDetector.Models
                 writer.WriteLine($"Server Name: {Provider.serverName}");
                 writer.WriteLine($"Server ID: {Provider.serverID}");
                 writer.WriteLine($"Server Version: {Provider.APP_VERSION}");
+                writer.WriteLine($"Plugin Framework: Openmod");
                 writer.WriteLine();
                 lock (loggerClient)
                 {

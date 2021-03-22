@@ -20,7 +20,7 @@ namespace ShimmyMySherbet.RPCDetector.Commands
 
         public string Help => "Generates an RPC Report";
 
-        public string Syntax => $"ReportRPC (txt/paste)";
+        public string Syntax => $"ReportRPC (haste/txt/paste)";
 
         public List<string> Aliases => new List<string>();
 
@@ -30,7 +30,7 @@ namespace ShimmyMySherbet.RPCDetector.Commands
         {
             UnturnedChat.Say(caller, "Generating RPC report...");
 
-            int mode = 0;
+            int mode = 2;
             if (command.Length >= 1)
             {
                 switch(command[0].ToLower())
@@ -40,6 +40,9 @@ namespace ShimmyMySherbet.RPCDetector.Commands
                         break;
                     case "paste":
                         mode = 1;
+                        break;
+                    case "haste":
+                        mode = 2;
                         break;
                     default:
                         UnturnedChat.Say(caller, "Unknown log mode.");
@@ -68,7 +71,7 @@ namespace ShimmyMySherbet.RPCDetector.Commands
             task.Start();
         }
 
-        public ReportGen CreateReport(int tool = 0)
+        public ReportGen CreateReport(int tool)
         {
             string report;
             try
@@ -87,7 +90,6 @@ namespace ShimmyMySherbet.RPCDetector.Commands
                 Logger.LogError($"Failed to write report: {ex.Message}");
                 throw;
             }
-
             switch (tool)
             {
                 case 0:
@@ -95,6 +97,9 @@ namespace ShimmyMySherbet.RPCDetector.Commands
 
                 case 1:
                     return Source_Log(report);
+
+                case 2:
+                    return Source_Haste(report);
             }
             return new ReportGen(null, "Failed to upload report.");
         }
@@ -123,6 +128,14 @@ namespace ShimmyMySherbet.RPCDetector.Commands
             File.WriteAllText(fileName, report);
 
             return new ReportGen(null, $"Report written to {name} in logs folder.");
+        }
+
+
+        public ReportGen Source_Haste(string report)
+        {
+            HasteAPI haste = new HasteAPI();
+            string url = haste.Upload(report);
+            return new ReportGen() { Message = $"Report URL: {url}", ReportURL = url };
         }
 
         public struct ReportGen
